@@ -1,0 +1,28 @@
+name: Anichin API
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */4 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run & Save
+        run: |
+          node anichin.js --home > home.json
+          node anichin.js --search "donghua" > search.json || true
+      - name: Commit result
+        run: |
+          git config user.name "anichin-bot"
+          git config user.email "bot@local"
+          git add home.json search.json || true
+          git commit -m "update data $(date -u +%Y-%m-%dT%H:%M:%SZ)" || echo "no change"
+          git push
